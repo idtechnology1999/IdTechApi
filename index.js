@@ -2,10 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const Team = require("./controller/Team")
 const Course = require("./controller/Course")
-const FetchTeam = require("./controller/FetchTeam")
-const FetchCourse = require("./controller/FetchCourse")
-const editCourse = require("./controller/editCourse")
-const editTeam = require("./controller/editTeam")
 const path = require("path");
 
 
@@ -24,15 +20,11 @@ app.use("/imgCourse", express.static(path.join(__dirname, "./controller/Uploads/
 
 // set all Routes here
 
-app.use("/api/AddTeam", Team)
-app.use("/api/Addskills", Course)
-app.use("/api/FetchTeam", FetchTeam)
-app.use("/api/FetchCourse", FetchCourse)
-app.use("/api/editTeam",editTeam )
-app.use("/api/editCourse", editCourse)
+app.use("/api/Team", Team)
+app.use("/api/Course", Course)
 
 
-
+// delete
 
 
 

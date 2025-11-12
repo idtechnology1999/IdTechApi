@@ -71,4 +71,68 @@ Router.post("/add", upload .single("image"), async (req, res) => {
 });
 
 
+
+// fetch all team here
+Router.get("/Fetch", async(req, res)=>{
+    try {
+      const FetchAll = await Team.find();
+      res.json({message:FetchAll})
+        
+    } catch (error) {
+       res.json({message:"wait...., Error in fetching"}) 
+    }
+})
+
+
+
+// delete team here
+Router.delete("/delete/:id", async(req, res)=>{
+try {
+  const {id} = req.params
+  const del = await Team.findByIdAndDelete(id)
+  if(del){
+  res.json({message:`successfully delete`})
+  }else{
+      res.json({message:`error in delete delete`})
+  }
+} catch (error) {
+  res.json({message: "error occur here"})
+}
+})
+
+
+// ✅ Edit team member with optional new image
+Router.put("/edit/:id", upload.single("picture"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { full_name, profession } = req.body;
+
+    const updateData = {
+      full_name,
+      profession,
+    };
+
+    // If a new file was uploaded, include it
+    if (req.file) {
+      updateData.picture = req.file.filename;
+    }
+
+    const updatedMember = await Team.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!updatedMember) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    res.status(200).json({ message: "Member updated successfully", member: updatedMember });
+  } catch (error) {
+    console.error("Error editing member:", error);
+    res.status(500).json({ message: "Server error while editing" });
+  }
+});
+
+
+
+
+
+
 module.exports = Router
