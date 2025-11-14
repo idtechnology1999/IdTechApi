@@ -31,7 +31,7 @@ app.use("/api/Course", Course)
 
 // ✅ Default route
 app.get("/", (req, res) => {
-  res.send("Backend is currently running ✅");
+  res.send("Backend is currently running, Idtech just make a new changes ✅");
 });
 
 
