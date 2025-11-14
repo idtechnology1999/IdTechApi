@@ -100,35 +100,38 @@ try {
 })
 
 
-// ✅ Edit team member with optional new image
+
+
+
 Router.put("/edit/:id", upload.single("picture"), async (req, res) => {
   try {
     const { id } = req.params;
     const { full_name, profession } = req.body;
 
-    const updateData = {
-      full_name,
-      profession,
-    };
+    const member = await Team.findById(id);
+    if (!member) return res.status(404).json({ message: "Member not found" });
 
-    // If a new file was uploaded, include it
+    const updateData = {};
+    if (full_name) updateData.full_name = full_name;
+    if (profession) updateData.profession = profession;
+
     if (req.file) {
       updateData.picture = req.file.filename;
+
+      if (member.picture) {
+        const oldPath = path.join(uploadPath, member.picture);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
     }
 
-    const updatedMember = await Team.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedMember = await Team.findByIdAndUpdate(id, { $set: updateData }, { new: true });
 
-    if (!updatedMember) {
-      return res.status(404).json({ message: "Member not found" });
-    }
-
-    res.status(200).json({ message: "Member updated successfully", member: updatedMember });
+    res.status(200).json({ message: "Member updated successfully ✅", member: updatedMember });
   } catch (error) {
-    console.error("Error editing member:", error);
-    res.status(500).json({ message: "Server error while editing" });
+    console.error("❌ Error editing member:", error);
+    res.status(500).json({ message: "Server error while editing", error: error.message });
   }
 });
-
 
 
 
