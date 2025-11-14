@@ -69,15 +69,16 @@ Router.post("/add", upload.single("image"), async (req, res) => {
 // ---------------------
 // ✅ Fetch All Courses
 // ---------------------
-Router.get("/fetch", async (req, res) => {
+Router.get("/Fetch", async (req, res) => {
   try {
     const allCourses = await Course.find();
-    res.json({ message: allCourses });
+    res.json(allCourses); // MUST BE AN ARRAY
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching courses" });
   }
 });
+
 
 // ---------------------
 // ✅ Edit Course

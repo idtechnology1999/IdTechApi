@@ -71,17 +71,16 @@ Router.post("/add", upload .single("image"), async (req, res) => {
 });
 
 
-
-// fetch all team here
-Router.get("/Fetch", async(req, res)=>{
-    try {
-      const FetchAll = await Team.find();
-      res.json({message:FetchAll})
-        
-    } catch (error) {
-       res.json({message:"wait...., Error in fetching"}) 
-    }
-})
+// fetch here
+Router.get("/Fetch", async (req, res) => {
+  try {
+    const FetchAll = await Team.find();
+    res.json(FetchAll); // <<--- return array directly
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error in fetching" });
+  }
+});
 
 
 
