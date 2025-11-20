@@ -24,10 +24,6 @@ app.use("/api/Team", Team)
 app.use("/api/Course", Course)
 
 
-// delete
-
-
-
 
 // ✅ Default route
 app.get("/", (req, res) => {
