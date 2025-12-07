@@ -90,14 +90,12 @@ Router.put("/edit/:id", upload.single("image"), async (req, res) => {
     const file = req.file ? req.file.filename : null;
 
     const course = await Course.findById(id);
-    if (!course) return res.status(404).json({ message: "Course not found" });
-
+    if (!course) return res.status(404).json({ message: "Course not found" });  
     // Update fields
     course.title = title || course.title;
     course.Description = Description || course.Description;
     if (file) course.image = file;
     course.update = "updated";
-
     await course.save();
     res.json({ message: "Course updated successfully" });
   } catch (error) {

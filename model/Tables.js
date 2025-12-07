@@ -36,6 +36,35 @@ const CourseOffered = new mongoose.Schema({
 const Course = mongoose.model("Courses", CourseOffered)
 
 
+// mobileapp table
+
+const UserSchema = new mongoose.Schema(
+  {
+    fullName:    { type: String, required: true, trim: true },
+    email:       { type: String, required: true,  trim: true, lowercase: true },
+    course:      { type: String, required: true, trim: true },
+    amount:      { type: Number, required: true, min: 0 },
+
+    // Duration of course
+    duration:    { type: String, default: "3 Months", trim: true },
+
+    // Certificate status (Pending, Completed)
+    certificate: { type: String, default: "Pending", trim: true },
+
+    // Overall student status
+    status:      { 
+      type: String, 
+      enum: ["Pending", "Completed", "In Progress"], 
+      default: "Pending" 
+    },
+
+    createdAt:   { type: Date, default: Date.now },
+    password : {type: String,  default: "IDTECH"}
+  },
+  { timestamps: true }
+);
+
+const MobileUsers = mongoose.model("MobileUsers", UserSchema);
 
 
 
@@ -43,4 +72,4 @@ const Course = mongoose.model("Courses", CourseOffered)
 
 
 // export multiple table
-module.exports = {Team, Course};
+module.exports = {Team, Course, MobileUsers};

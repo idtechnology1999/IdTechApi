@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const Team = require("./controller/Team")
 const Course = require("./controller/Course")
+const MobileAdd = require("./controller/mobileApp")
 const path = require("path");
 
 
@@ -18,10 +19,12 @@ app.use("/imgTeam", express.static(path.join(__dirname, "./controller/Uploads/te
 app.use("/imgCourse", express.static(path.join(__dirname, "./controller/Uploads/CourseUpload")))
 
 
+
 // set all Routes here
 
 app.use("/api/Team", Team)
 app.use("/api/Course", Course)
+app.use("/api/MobileApp", MobileAdd)
 
 
 
@@ -29,6 +32,7 @@ app.use("/api/Course", Course)
 app.get("/", (req, res) => {
   res.send("Backend is currently running, Idtech just make a new changes ✅");
 });
+
 
 
 
