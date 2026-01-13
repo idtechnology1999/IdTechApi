@@ -16,6 +16,7 @@ const ensureFolder = (folderPath) => {
   }
 };
 
+
 // ✅ Base upload directory
 const uploadPaths = {
   course: path.join(__dirname, "Uploads/CourseUpload"),
