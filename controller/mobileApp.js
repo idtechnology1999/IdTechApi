@@ -57,7 +57,7 @@ Router.post("/login", async (req, res) => {
         message: "Invalid email or password",
       });
     }
-
+    
     // ✅ Check password (default or updated)
     if (user.password !== password) {
       return res.json({
@@ -65,6 +65,8 @@ Router.post("/login", async (req, res) => {
         message: "Invalid email or password",
       });
     }
+
+    
 
     // ✅ Update status if first successful login
     if (user.status === "Pending") {

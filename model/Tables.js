@@ -62,12 +62,33 @@ UserSchema.index({ email: 1, course: 1 }, { unique: true });
 
 const MobileUsers = mongoose.model("MobileUsers", UserSchema);
 
+// Video Schema
+const VideoSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    course: { type: String, required: true, trim: true },
+    description: { type: String, required: true, trim: true },
+    videoUrl: { type: String, required: true }, // File path
+    duration: { type: String, required: true }, // e.g., "15:30"
+    fileName: { type: String, required: true },
+    fileSize: { type: String, required: true }, // e.g., "45.5 MB"
+    thumbnailUrl: { type: String }, // Optional thumbnail
+    uploadDate: { type: Date, default: Date.now },
+    views: { type: Number, default: 0 },
+    status: { 
+      type: String, 
+      enum: ["Active", "Inactive"], 
+      default: "Active" 
+    },
+  },
+  { timestamps: true }
+);
 
-// Connect to your DB and run:
+const Videos = mongoose.model("Videos", VideoSchema);
 
 
 
 
 
 // export multiple table
-module.exports = {Team, Course, MobileUsers};
+module.exports = {Team, Course, MobileUsers,Videos};
