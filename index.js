@@ -33,9 +33,12 @@ app.get("/", (req, res) => {
   res.send("Backend is running! Idtech just made new changes ✅");
 });
 
+// // ✅ Start server
+// const PORT = 3000;
+// app.listen(PORT, "0.0.0.0", () => {
+//   console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
+//   console.log(`🚀 Server running at http://localhost:${PORT}`);
+// });
+
 // ✅ Start server
-const PORT = 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+module.exports = app;
