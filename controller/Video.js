@@ -7,9 +7,12 @@ const { Videos } = require("../model/Tables");
 
 // ✅ Create uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, "Uploads/videos");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+
+
+
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir, { recursive: true });
+// }
 
 // ✅ Configure Multer for video uploads
 const storage = multer.diskStorage({
