@@ -172,9 +172,11 @@ router.post("/login", async (req, res) => {
 
     const user = await MobileUser.findOne({ email: email.trim().toLowerCase() });
 
-    if (!user || user.password !== password) {
-      return res.status(401).json({ status: false, message: "Invalid email or password" });
-    }
+    if (!user)
+      return res.status(401).json({ status: false, message: "No account found with this email address" });
+
+    if (user.password !== password)
+      return res.status(401).json({ status: false, message: "Incorrect password. Please try again" });
 
     if (user.status === "Pending") {
       user.status = "Active";
