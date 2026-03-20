@@ -142,17 +142,19 @@ router.patch("/change-password", async (req, res) => {
 // PATCH /api/mobile/reset-password
 router.patch("/reset-password", async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email)
-      return res.status(400).json({ status: false, message: "Email is required" });
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword)
+      return res.status(400).json({ status: false, message: "Email and new password are required" });
+    if (newPassword.length < 6)
+      return res.status(400).json({ status: false, message: "Password must be at least 6 characters" });
 
     const user = await MobileUser.findOne({ email: email.trim().toLowerCase() });
     if (!user)
       return res.status(404).json({ status: false, message: "No account found with this email" });
 
-    user.password = "IDTECH";
+    user.password = newPassword;
     await user.save();
-    res.json({ status: true, message: "Password has been reset to IDTECH" });
+    res.json({ status: true, message: "Password reset successfully" });
   } catch (err) {
     res.status(500).json({ status: false, message: "Server error" });
   }
