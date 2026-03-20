@@ -1,51 +1,47 @@
-// Import dependencies
+require("dotenv").config();
+
 const express = require("express");
-const cors = require("cors");
-const path = require("path");
+const cors    = require("cors");
+const connectDB = require("./config/db");
 
-// Import route controllers
-const Team = require("./controller/Team");
-const Course = require("./controller/Course");
-const MobileAdd = require("./controller/mobileApp");
-const Video = require("./controller/Video"); // ✅ Add this
+// ── Routes ──────────────────────────────────────────────────────────────────
+const teamRoutes   = require("./routes/web/team");
+const courseRoutes = require("./routes/web/course");
+const mobileRoutes       = require("./routes/mobile/mobileApp");
+const mobileCourseRoutes = require("./routes/mobile/mobileCourse");
+const videoRoutes        = require("./routes/mobile/video");
 
-// ✅ Initialize Express app
+// ── Connect to database ──────────────────────────────────────────────────────
+connectDB();
+
+// ── App setup ────────────────────────────────────────────────────────────────
 const app = express();
 
-// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Serve static folders
-app.use("/imgTeam", express.static(path.join(__dirname, "controller/Uploads/teamUpload")));
-app.use("/imgCourse", express.static(path.join(__dirname, "controller/Uploads/CourseUpload")));
-app.use("/imgApp", express.static(path.join(__dirname, "controller/Uploads/mobileApp")));
-app.use("/videos", express.static(path.join(__dirname, "controller/Uploads/videos"))); // ✅ Add this
+// ── API routes ────────────────────────────────────────────────────────────────
+app.use("/api/team",   teamRoutes);
+app.use("/api/course", courseRoutes);
+app.use("/api/mobile",         mobileRoutes);
+app.use("/api/mobile/courses", mobileCourseRoutes);
+app.use("/api/video",          videoRoutes);
 
-// ✅ API routes
-app.use("/api/Team", Team);
-app.use("/api/Course", Course);
-app.use("/api/MobileApp", MobileAdd);
-app.use("/api/Video", Video); // ✅ Add this
-
-// ✅ Default root route
+// ── Health check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
-  res.send("Backend is running! Idtech just made new changes ✅");
+  res.json({ status: "ok", message: "IDTECH API is running" });
 });
 
-// ✅ Start server
-// const PORT = 3000;
-// app.listen(PORT, "0.0.0.0", () => {
-//   console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
-//   console.log(`🚀 Server running at http://localhost:${PORT}`);
-// });
 
-const PORT = 3000;
+// ── 404 handler ───────────────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Route not found" });
+});
+
+// ── Start server ──────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  // console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
 
-// ✅ Start server
 module.exports = app;
-
