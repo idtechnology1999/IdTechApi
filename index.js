@@ -27,7 +27,7 @@ app.use("/api/mobile",         mobileRoutes);
 app.use("/api/mobile/courses", mobileCourseRoutes);
 app.use("/api/video",          videoRoutes);
 
-// ── Health check ──────────────────────────────────────────────────────────────
+// ── Health checking ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "IDTECH API is running" });
 });
