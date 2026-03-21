@@ -17,7 +17,23 @@ connectDB();
 // ── App setup ────────────────────────────────────────────────────────────────
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  "https://idtech-xiku.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+
+app.options("*", cors());
 app.use(express.json());
 
 // ── API routes ────────────────────────────────────────────────────────────────
