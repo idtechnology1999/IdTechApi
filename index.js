@@ -11,8 +11,15 @@ const mobileRoutes       = require("./routes/mobile/mobileApp");
 const mobileCourseRoutes = require("./routes/mobile/mobileCourse");
 const videoRoutes        = require("./routes/mobile/video");
 
-// ── Connect to database ──────────────────────────────────────────────────────
-connectDB();
+// ── Connect to database (per-request for serverless) ────────────────────────
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Database connection failed" });
+  }
+});
 
 // ── App setup ────────────────────────────────────────────────────────────────
 const app = express();
