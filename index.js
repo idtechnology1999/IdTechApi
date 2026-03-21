@@ -23,7 +23,7 @@ const allowedOrigins = [
   "http://localhost:3000",
 ];
 
-app.use(cors({
+app.options("*", cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error("Not allowed by CORS"));
@@ -33,7 +33,15 @@ app.use(cors({
   credentials: true,
 }));
 
-app.options("*", cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
 app.use(express.json());
 
 // ── API routes ────────────────────────────────────────────────────────────────

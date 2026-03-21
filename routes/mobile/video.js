@@ -1,22 +1,8 @@
-const express = require("express");
-const router  = express.Router();
-const cloudinary      = require("../../config/cloudinary");
-const { videoUpload } = require("../../middleware/upload");
-const Video           = require("../../models/Video");
-
-// ── Cloudinary helpers ──────────────────────────────────────────────────────
-const uploadVideo = (buffer) =>
-  new Promise((resolve, reject) => {
-    cloudinary.uploader
-      .upload_stream(
-        { folder: "videos", resource_type: "video", chunk_size: 6_000_000 },
-        (err, result) => {
-          if (err) return reject(err);
-          resolve(result);
-        }
-      )
-      .end(buffer);
-  });
+const express    = require("express");
+const router     = express.Router();
+const cloudinary = require("../../config/cloudinary");
+const crypto     = require("crypto");
+const Video      = require("../../models/Video");
 
 const deleteVideo = (publicId) =>
   cloudinary.uploader.destroy(publicId, { resource_type: "video" });
@@ -51,36 +37,39 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST /api/video/upload
-router.post("/upload", videoUpload.single("video"), async (req, res) => {
+// GET /api/video/signature — generate a signed upload params for direct Cloudinary upload
+router.get("/signature", (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: "No video file provided" });
-    }
+    const timestamp = Math.round(Date.now() / 1000);
+    const params    = { folder: "videos", resource_type: "video", timestamp };
+    const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET);
+    res.json({
+      success: true,
+      timestamp,
+      signature,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      apiKey:    process.env.CLOUDINARY_API_KEY,
+      folder:    "videos",
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to generate signature" });
+  }
+});
 
-    const { title, course, description, duration } = req.body;
-
-    if (!title || !course || !description || !duration) {
+// POST /api/video/save — save video metadata after direct Cloudinary upload
+router.post("/save", async (req, res) => {
+  try {
+    const { title, course, description, duration, videoUrl, videoPublicId, fileName, fileSize } = req.body;
+    if (!title || !course || !description || !duration || !videoUrl) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
-
-    const result = await uploadVideo(req.file.buffer);
-
     const video = await Video.create({
-      title,
-      course,
-      description,
-      duration,
-      videoUrl:       result.secure_url,
-      videoPublicId:  result.public_id,
-      fileName:       req.file.originalname,
-      fileSize:       `${(req.file.size / (1024 * 1024)).toFixed(2)} MB`,
+      title, course, description, duration,
+      videoUrl, videoPublicId, fileName, fileSize,
     });
-
-    res.status(201).json({ success: true, message: "Video uploaded", data: video });
+    res.status(201).json({ success: true, message: "Video saved", data: video });
   } catch (err) {
-    console.error("Video upload error:", err.message);
-    res.status(500).json({ success: false, message: "Failed to upload video" });
+    res.status(500).json({ success: false, message: "Failed to save video" });
   }
 });
 
