@@ -20,14 +20,20 @@ connectDB();
 const allowedOrigins = [
   "https://idtech-xiku.vercel.app",
   "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
   "http://localhost:3000",
+  "http://localhost:4173",
 ];
+
+const isAllowedOrigin = (origin) =>
+  !origin || allowedOrigins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin);
 
 
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (isAllowedOrigin(origin)) return callback(null, true);
     callback(new Error("Not allowed by CORS"));
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
