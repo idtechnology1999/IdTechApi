@@ -22,6 +22,27 @@ router.get("/all", async (req, res) => {
   }
 });
 
+// GET /api/video/signature — generate signed upload params for direct Cloudinary upload
+router.get("/signature", (req, res) => {
+  try {
+    const timestamp = Math.round(Date.now() / 1000);
+    // Cloudinary requires params sorted alphabetically, no resource_type in signature string
+    const str       = `folder=videos&timestamp=${timestamp}${process.env.CLOUDINARY_API_SECRET}`;
+    const signature = crypto.createHash("sha256").update(str).digest("hex");
+    res.json({
+      success: true,
+      timestamp,
+      signature,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      apiKey:    process.env.CLOUDINARY_API_KEY,
+      folder:    "videos",
+    });
+  } catch (err) {
+    console.error("Signature error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // GET /api/video/:id
 router.get("/:id", async (req, res) => {
   try {
@@ -37,26 +58,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// GET /api/video/signature — generate a signed upload params for direct Cloudinary upload
-router.get("/signature", (req, res) => {
-  try {
-    const timestamp = Math.round(Date.now() / 1000);
-    const params    = { folder: "videos", resource_type: "video", timestamp };
-    const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET);
-    res.json({
-      success: true,
-      timestamp,
-      signature,
-      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-      apiKey:    process.env.CLOUDINARY_API_KEY,
-      folder:    "videos",
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Failed to generate signature" });
-  }
-});
-
-// POST /api/video/save — save video metadata after direct Cloudinary upload
+// POST /api/video/save
 router.post("/save", async (req, res) => {
   try {
     const { title, course, description, duration, videoUrl, videoPublicId, fileName, fileSize } = req.body;
