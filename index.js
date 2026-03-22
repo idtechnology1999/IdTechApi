@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: [".env.local", ".env"] });
 
 const express = require("express");
 const cors    = require("cors");
@@ -11,18 +11,11 @@ const mobileRoutes       = require("./routes/mobile/mobileApp");
 const mobileCourseRoutes = require("./routes/mobile/mobileCourse");
 const videoRoutes        = require("./routes/mobile/video");
 
-// ── Connect to database (per-request for serverless) ────────────────────────
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Database connection failed" });
-  }
-});
-
 // ── App setup ────────────────────────────────────────────────────────────────
 const app = express();
+
+// ── Connect to database ────────────────────────────────────────────────────
+connectDB();
 
 const allowedOrigins = [
   "https://idtech-xiku.vercel.app",
@@ -30,15 +23,7 @@ const allowedOrigins = [
   "http://localhost:3000",
 ];
 
-app.options("*", cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error("Not allowed by CORS"));
-  },
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}));
+
 
 app.use(cors({
   origin: (origin, callback) => {
