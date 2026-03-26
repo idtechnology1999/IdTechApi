@@ -3,6 +3,22 @@ const router         = express.Router();
 const cloudinary     = require("../../config/cloudinary");
 const { imageUpload } = require("../../middleware/upload");
 const MobileCourse   = require("../../models/MobileCourse");
+const multer         = require("multer");
+const xlsx           = require("xlsx");
+
+const excelUpload = multer({ storage: multer.memoryStorage() });
+
+function parseOutlineExcel(buffer) {
+  const workbook = xlsx.read(buffer, { type: "buffer" });
+  const sheet    = workbook.Sheets[workbook.SheetNames[0]];
+  const rows     = xlsx.utils.sheet_to_json(sheet, { defval: "" });
+  return rows.map((row) => ({
+    module:  String(row["Module"] || row["module"] || "General").trim(),
+    week:    String(row["Week"]   || row["week"]   || "").trim(),
+    topic:   String(row["Topic"]  || row["topic"]  || "").trim(),
+    details: String(row["Details"]|| row["details"]|| "").trim(),
+  })).filter((r) => r.week && r.topic);
+}
 
 const uploadImage = (buffer) =>
   new Promise((resolve, reject) => {
@@ -27,21 +43,27 @@ router.get("/all", async (req, res) => {
 });
 
 // POST /api/mobile/courses/add
-router.post("/add", imageUpload.single("image"), async (req, res) => {
+router.post("/add", excelUpload.fields([{ name: "image", maxCount: 1 }, { name: "outline", maxCount: 1 }]), async (req, res) => {
   try {
     const { title } = req.body;
-    if (!title || !req.file)
+    const imageFile   = req.files?.["image"]?.[0];
+    const outlineFile = req.files?.["outline"]?.[0];
+
+    if (!title || !imageFile)
       return res.status(400).json({ success: false, message: "Title and image are required" });
 
     const exists = await MobileCourse.findOne({ title: title.trim() });
     if (exists)
       return res.status(400).json({ success: false, message: `"${title}" already exists` });
 
-    const result = await uploadImage(req.file.buffer);
+    const result = await uploadImage(imageFile.buffer);
+    const outline = outlineFile ? parseOutlineExcel(outlineFile.buffer) : [];
+
     const course = await MobileCourse.create({
       title:         title.trim(),
       image:         result.secure_url,
       imagePublicId: result.public_id,
+      outline,
     });
 
     res.status(201).json({ success: true, message: "Course added", data: course });
@@ -51,24 +73,55 @@ router.post("/add", imageUpload.single("image"), async (req, res) => {
 });
 
 // PUT /api/mobile/courses/edit/:id
-router.put("/edit/:id", imageUpload.single("image"), async (req, res) => {
+router.put("/edit/:id", excelUpload.fields([{ name: "image", maxCount: 1 }, { name: "outline", maxCount: 1 }]), async (req, res) => {
   try {
     const course = await MobileCourse.findById(req.params.id);
     if (!course) return res.status(404).json({ success: false, message: "Course not found" });
 
     if (req.body.title) course.title = req.body.title.trim();
 
-    if (req.file) {
+    const imageFile   = req.files?.["image"]?.[0];
+    const outlineFile = req.files?.["outline"]?.[0];
+
+    if (imageFile) {
       if (course.imagePublicId) await deleteImage(course.imagePublicId);
-      const result = await uploadImage(req.file.buffer);
+      const result = await uploadImage(imageFile.buffer);
       course.image         = result.secure_url;
       course.imagePublicId = result.public_id;
+    }
+
+    if (outlineFile) {
+      course.outline = parseOutlineExcel(outlineFile.buffer);
+      course.markModified("outline");
     }
 
     await course.save();
     res.json({ success: true, message: "Course updated", data: course });
   } catch {
     res.status(500).json({ success: false, message: "Failed to update course" });
+  }
+});
+
+// GET /api/mobile/courses/outline/:id
+router.get("/outline/:id", async (req, res) => {
+  try {
+    const course = await MobileCourse.findById(req.params.id).select("title outline");
+    if (!course) return res.status(404).json({ success: false, message: "Course not found" });
+    res.json({ success: true, data: course });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch outline" });
+  }
+});
+
+// GET /api/mobile/courses/outline-by-title/:title
+router.get("/outline-by-title/:title", async (req, res) => {
+  try {
+    const title  = decodeURIComponent(req.params.title);
+    const course = await MobileCourse.findOne({ title }).select("title outline");
+    if (!course) return res.status(404).json({ success: false, message: `Course "${title}" not found` });
+    res.json({ success: true, data: course });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
