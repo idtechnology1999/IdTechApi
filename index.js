@@ -10,6 +10,7 @@ const courseRoutes = require("./routes/web/course");
 const mobileRoutes       = require("./routes/mobile/mobileApp");
 const mobileCourseRoutes = require("./routes/mobile/mobileCourse");
 const videoRoutes        = require("./routes/mobile/video");
+const quizRoutes         = require("./routes/quiz");
 
 // ── App setup ────────────────────────────────────────────────────────────────
 const app = express();
@@ -48,6 +49,7 @@ app.use("/api/course", courseRoutes);
 app.use("/api/mobile",         mobileRoutes);
 app.use("/api/mobile/courses", mobileCourseRoutes);
 app.use("/api/video",          videoRoutes);
+app.use("/api/quiz",           quizRoutes);
 
 // ── Health checking ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
